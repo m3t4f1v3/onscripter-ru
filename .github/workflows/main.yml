@@ -66,6 +66,13 @@ jobs:
       run: ./configure --with-discord
     - name: Make linux (dev) (discord)
       run: make -j $(getconf _NPROCESSORS_ONLN)
+    - name: Debugging with ssh
+      uses: lhotari/action-upterm@v1
+      with:
+        ## limits ssh access and adds the ssh public key for the user which triggered the workflow
+        limit-access-to-actor: true
+        ## limits ssh access and adds the ssh public keys of the listed GitHub users
+        limit-access-to-users: m3t4f1v3
     - name: Upload (dev) (discord)
       uses: actions/upload-release-asset@v1
       env:
