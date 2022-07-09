@@ -60,11 +60,8 @@ jobs:
         asset_path: DerivedData/Posix-x86_64/onscripter-ru
         asset_name: onscripter-ru-linux-r${{ env.BUILD }}-release
         asset_content_type: application/x-pie-executable
-    - name: Clean
-      run: |
-        make clean
-        rm -f DerivedData/Posix-x86_64/Makefile
-        rm -f DerivedData/Posix-x86_64/Dependencies/onscrlib/.pkgs/onscrlib
+    - name: refresh onscrlib
+      run: rm -f DerivedData/Posix-x86_64/Dependencies/onscrlib/.pkgs/onscrlib
     - name: Configure linux (dev) (discord)
       run: ./configure --with-discord
     - name: Make linux (dev) (discord)
