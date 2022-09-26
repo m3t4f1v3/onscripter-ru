@@ -16,10 +16,12 @@ jobs:
       matrix: 
         BUILD_TYPE: ["debug","release"]
     steps:
-      - uses: actions/checkout@v3
       - env:
           dev: ${{ env.BUILD_TYPE == "debug" && 'dev' || '' }}
           cmd: ${{ env.BUILD_TYPE == "release" && '--release-build --strip-binary' || '' }}
+
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install deps
         run: |
           sudo apt update
