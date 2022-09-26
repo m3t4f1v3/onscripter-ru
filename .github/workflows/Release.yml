@@ -1,0 +1,52 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+ 
+jobs:
+  Windows:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix: 
+        BUILD_TYPE: ["debug","release"]
+    steps:
+    - uses: actions/checkout@v3
+    - env:
+        dev: ${{ env.BUILD_TYPE == "debug" && 'dev' || '' }}
+        cmd: ${{ env.BUILD_TYPE == "release" && '--release-build --strip-binary' || '' }}
+    - name: Install deps
+      run: |
+        sudo apt update
+        sudo apt install -y binutils-mingw-w64-i686 gcc-mingw-w64-i686 yasm
+    - name: Env setup
+      run: |
+        BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
+        echo "Build number ${BUILD}"
+        mkdir -p ciout
+        unset CC ; unset CXX ; unset CC_FOR_BUILD ; unset CXX_FOR_BUILD
+        export CC=i686-w64-mingw32-gcc
+        export CXX=i686-w64-mingw32-g++
+        export LD=i686-w64-mingw32-ld
+        export AR=i686-w64-mingw32-ar
+        export RANLIB=i686-w64-mingw32-ranlib
+        export AS=i686-w64-mingw32-as
+    - name: Configure
+      run: ./configure --cross=i686-w64-mingw32 ${{env.cmd}}
+
+
+    - name: Build
+      run: |
+        make clean
+        make -j$(nproc)
+        mv DerivedData/MinGW-i686/onscripter-ru.exe ciout ; cp -r Resources/Windows/dlls ciout/dlls ; cd ciout
+        zip -qry onscripter-ru_win_r${BUILD}_${{env.dev}}.zip onscripter-ru.exe dlls 
+      
+
+
+      
