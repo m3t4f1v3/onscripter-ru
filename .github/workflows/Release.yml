@@ -24,6 +24,8 @@ jobs:
       AR: i686-w64-mingw32-ar
       RANLIB: i686-w64-mingw32-ranlib
       AS: i686-w64-mingw32-as
+      CXX_FOR_BUILD:
+      CC_FOR_BUILD:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
