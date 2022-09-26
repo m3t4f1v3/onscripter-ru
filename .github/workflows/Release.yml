@@ -16,8 +16,8 @@ jobs:
       matrix: 
         BUILD_TYPE: ["debug","release"]
     env:
-      dev: ${{ matrix.BUILD_TYPE == "debug" && 'dev' || '' }}
-      cmd: ${{ matrix.BUILD_TYPE == "release" && '--release-build --strip-binary' || '' }}
+      dev: ${{ matrix.BUILD_TYPE == 'debug' && 'dev' || '' }}
+      cmd: ${{ matrix.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
