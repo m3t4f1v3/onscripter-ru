@@ -15,11 +15,10 @@ jobs:
     strategy:
       matrix: 
         BUILD_TYPE: ["debug","release"]
+    env:
+      dev: ${{ env.BUILD_TYPE == "debug" && 'dev' || '' }}
+      cmd: ${{ env.BUILD_TYPE == "release" && '--release-build --strip-binary' || '' }}
     steps:
-      - env:
-          dev: ${{ env.BUILD_TYPE == "debug" && 'dev' || '' }}
-          cmd: ${{ env.BUILD_TYPE == "release" && '--release-build --strip-binary' || '' }}
-
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
