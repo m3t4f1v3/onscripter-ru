@@ -16,7 +16,7 @@ jobs:
       matrix: 
         BUILD_TYPE: ["debug","release"]
     env:
-      dev: ${{ matrix.BUILD_TYPE == 'debug' && 'dev' || '' }}
+      dev: ${{ matrix.BUILD_TYPE == 'debug' && '_dev' || '' }}
       cmd: ${{ matrix.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
     steps:
       - name: Checkout
@@ -29,6 +29,7 @@ jobs:
         run: |
           BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
           echo "Build number ${BUILD}"
+          echo "BUILD=${BUILD}" >> $GITHUB_ENV
           mkdir -p ciout
       - name: Configure
         env:
@@ -44,4 +45,75 @@ jobs:
           make clean
           make -j$(nproc)
           mv DerivedData/MinGW-i686/onscripter-ru.exe ciout ; cp -r Resources/Windows/dlls ciout/dlls ; cd ciout
-          zip -qry onscripter-ru_win_r${BUILD}_${{env.dev}}.zip onscripter-ru.exe dlls 
+          zip -qry onscripter-ru_win_r${BUILD}${{env.dev}}.zip onscripter-ru.exe dlls 
+
+  Linux:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix: 
+        BUILD_TYPE: ["debug","release"]
+    env:
+      dev: ${{ matrix.BUILD_TYPE == 'debug' && '_dev' || '' }}
+      cmd: ${{ matrix.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y yasm libreadline-dev libasound-dev libgl1-mesa-dev libegl1-mesa-dev libxrandr-dev
+      - name: Env setup
+        run: |
+          BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
+          echo "Build number ${BUILD}"
+          echo "BUILD=${BUILD}" >> $GITHUB_ENV
+          mkdir -p ciout
+      - name: Configure
+        run: ./configure ${{env.cmd}}
+      - name: Build
+        run: |
+          make clean
+          make -j$(nproc)
+          mv DerivedData/Posix-x86_64/onscripter-ru ciout ; cd ciout
+          zip -qry onscripter-ru_linux64_r${BUILD}${{env.dev}}.zip onscripter-ru || exit 1
+          rm onscripter-ru ; cd ..
+
+  macOS:
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: macos-11
+    strategy:
+      matrix: 
+        BUILD_TYPE: ["Debug","Release"]
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      dev: ${{ matrix.BUILD_TYPE == 'Debug' && '_dbg' || '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install deps
+        run: |
+          brew install yasm
+          mkdir -p ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins
+          cp -r Resources/Plugins/Clang\ MacPorts.xcplugin ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/
+          XCODEUUID=$(defaults read /Applications/Xcode-9.4.1.app/Contents/Info DVTPlugInCompatibilityUUID)
+          echo "XCODEUUID=${XCODEUUID}" >> $GITHUB_ENV
+          defaults write ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/Clang\ MacPorts.xcplugin/Contents/Info.plist DVTPlugInCompatibilityUUIDs -array-add $XCODEUUID
+          curl -OL https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz || exit 1
+          sum=$(shasum -a 256 clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | cut -f1 -d' ')
+          expsum="94ebeb70f17b6384e052c47fef24a6d70d3d949ab27b6c83d4ab7b298278ad6f"
+          if [ "$sum" != "$expsum" ]; then echo "Clang hash $sum does not match $expsum" ; exit 1 ; fi
+          tar -xf clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz
+          sudo mkdir -p /opt
+          sudo mv clang+llvm-8.0.0-x86_64-apple-darwin /opt/clang
+          sudo perl -pi -e 'BEGIN{undef $/;} s/(_LIBCPP_AVAILABILITY_TYPEINFO_VTABLE[ ]+\\\n[^\n]+10)\.9/\1.6/;' /opt/clang/include/c++/v1/__config
+      - name: Build
+        run: |
+          xcodebuild -target onscripter-ru-osx -configuration ${{matrix.BUILD_TYPE}} || exit 1
+          mv build/Debug/onscripter-ru-osx.app ciout ; cd ciout
+          zip -qry onscripter-ru_osx_r${BUILD}${{env.dev}}.zip onscripter-ru-osx.app || exit 1
+          rm -rf onscripter-ru-osx.app ; cd -
