@@ -29,15 +29,15 @@ jobs:
         run: |
           BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
           echo "Build number ${BUILD}"
+          echo "BUILD=${BUILD}" >> $GITHUB_ENV
+          echo "CC=i686-w64-mingw32-gcc" >> $GITHUB_ENV
+          echo "CXX=i686-w64-mingw32-g++" >> $GITHUB_ENV
+          echo "LD=i686-w64-mingw32-ld" >> $GITHUB_ENV
+          echo "AR=i686-w64-mingw32-ar" >> $GITHUB_ENV
+          echo "RANLIB=i686-w64-mingw32-ranlib" >> $GITHUB_ENV
+          echo "AS=i686-w64-mingw32-as" >> $GITHUB_ENV
           mkdir -p ciout
       - name: Configure
-        env:
-          CC: i686-w64-mingw32-gcc
-          CXX: i686-w64-mingw32-g++
-          LD: i686-w64-mingw32-ld
-          AR: i686-w64-mingw32-ar
-          RANLIB: i686-w64-mingw32-ranlib
-          AS: i686-w64-mingw32-as
         run: ./configure --cross=i686-w64-mingw32 ${{env.cmd}}
       - name: Build
         run: |
