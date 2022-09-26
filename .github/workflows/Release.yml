@@ -24,14 +24,15 @@ jobs:
       AR: i686-w64-mingw32-ar
       RANLIB: i686-w64-mingw32-ranlib
       AS: i686-w64-mingw32-as
-      CXX_FOR_BUILD:
-      CC_FOR_BUILD:
+      CXX_FOR_BUILD: i686-w64-mingw32-g++
+      CC_FOR_BUILD: i686-w64-mingw32-gcc
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install deps
         run: |
-          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y upgrade
           sudo apt install -y binutils-mingw-w64-i686 gcc-mingw-w64-i686 yasm
       - name: Env setup
         run: |
