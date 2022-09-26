@@ -100,7 +100,7 @@ jobs:
           brew install yasm
           mkdir -p ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins
           cp -r Resources/Plugins/Clang\ MacPorts.xcplugin ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/
-          XCODEUUID=$(defaults read /Applications/Xcode-9.4.1.app/Contents/Info DVTPlugInCompatibilityUUID)
+          XCODEUUID=$(defaults read /Applications/Xcode_10.3.app/Contents/Info DVTPlugInCompatibilityUUID)
           echo "XCODEUUID=${XCODEUUID}" >> $GITHUB_ENV
           defaults write ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/Clang\ MacPorts.xcplugin/Contents/Info.plist DVTPlugInCompatibilityUUIDs -array-add $XCODEUUID
           curl -OL https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz || exit 1
