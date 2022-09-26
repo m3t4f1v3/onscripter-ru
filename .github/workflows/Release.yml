@@ -16,8 +16,14 @@ jobs:
       matrix: 
         BUILD_TYPE: ["debug","release"]
     env:
-      dev: ${{ matrix.BUILD_TYPE == 'debug' && 'dev' || '' }}
-      cmd: ${{ matrix.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
+      dev: ${{ env.BUILD_TYPE == 'debug' && 'dev' || '' }}
+      cmd: ${{ env.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
+      CC: i686-w64-mingw32-gcc
+      CXX: i686-w64-mingw32-g++
+      LD: i686-w64-mingw32-ld
+      AR: i686-w64-mingw32-ar
+      RANLIB: i686-w64-mingw32-ranlib
+      AS: i686-w64-mingw32-as
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -30,13 +36,6 @@ jobs:
           BUILD=$(($(git rev-list --count --first-parent HEAD)+3500))
           echo "Build number ${BUILD}"
           mkdir -p ciout
-          unset CC ; unset CXX ; unset CC_FOR_BUILD ; unset CXX_FOR_BUILD
-          export CC=i686-w64-mingw32-gcc
-          export CXX=i686-w64-mingw32-g++
-          export LD=i686-w64-mingw32-ld
-          export AR=i686-w64-mingw32-ar
-          export RANLIB=i686-w64-mingw32-ranlib
-          export AS=i686-w64-mingw32-as
       - name: Configure
         run: ./configure --cross=i686-w64-mingw32 ${{env.cmd}}
       - name: Build
