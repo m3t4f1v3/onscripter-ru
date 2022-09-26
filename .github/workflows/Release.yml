@@ -98,22 +98,10 @@ jobs:
       - name: Install deps
         run: |
           brew install yasm
-          mkdir -p ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins
-          cp -r Resources/Plugins/Clang\ MacPorts.xcplugin ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/
-          XCODEUUID=$(defaults read /Applications/Xcode_10.3.app/Contents/Info DVTPlugInCompatibilityUUID)
-          echo "XCODEUUID=${XCODEUUID}" >> $GITHUB_ENV
-          defaults write ~/Library/Application\ Support/Developer/Shared/Xcode/Plug-Ins/Clang\ MacPorts.xcplugin/Contents/Info.plist DVTPlugInCompatibilityUUIDs -array-add $XCODEUUID
-          curl -OL https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz || exit 1
-          sum=$(shasum -a 256 clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | cut -f1 -d' ')
-          expsum="94ebeb70f17b6384e052c47fef24a6d70d3d949ab27b6c83d4ab7b298278ad6f"
-          if [ "$sum" != "$expsum" ]; then echo "Clang hash $sum does not match $expsum" ; exit 1 ; fi
-          tar -xf clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz
-          sudo mkdir -p /opt
-          sudo mv clang+llvm-8.0.0-x86_64-apple-darwin /opt/clang
-          sudo perl -pi -e 'BEGIN{undef $/;} s/(_LIBCPP_AVAILABILITY_TYPEINFO_VTABLE[ ]+\\\n[^\n]+10)\.9/\1.6/;' /opt/clang/include/c++/v1/__config
+
       - name: Build
         run: |
           xcodebuild -target onscripter-ru-osx -configuration ${{matrix.BUILD_TYPE}} || exit 1
-          mv build/Debug/onscripter-ru-osx.app ciout ; cd ciout
+          mv build/${{matrix.BUILD_TYPE}}/onscripter-ru-osx.app ciout ; cd ciout
           zip -qry onscripter-ru_osx_r${BUILD}${{env.dev}}.zip onscripter-ru-osx.app || exit 1
           rm -rf onscripter-ru-osx.app ; cd -
