@@ -18,12 +18,6 @@ jobs:
     env:
       dev: ${{ matrix.BUILD_TYPE == 'debug' && 'dev' || '' }}
       cmd: ${{ matrix.BUILD_TYPE == 'release' && '--release-build --strip-binary' || '' }}
-      CC: i686-w64-mingw32-gcc
-      CXX: i686-w64-mingw32-g++
-      LD: i686-w64-mingw32-ld
-      AR: i686-w64-mingw32-ar
-      RANLIB: i686-w64-mingw32-ranlib
-      AS: i686-w64-mingw32-as
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -37,6 +31,13 @@ jobs:
           echo "Build number ${BUILD}"
           mkdir -p ciout
       - name: Configure
+        env:
+          CC: i686-w64-mingw32-gcc
+          CXX: i686-w64-mingw32-g++
+          LD: i686-w64-mingw32-ld
+          AR: i686-w64-mingw32-ar
+          RANLIB: i686-w64-mingw32-ranlib
+          AS: i686-w64-mingw32-as
         run: ./configure --cross=i686-w64-mingw32 ${{env.cmd}}
       - name: Build
         run: |
